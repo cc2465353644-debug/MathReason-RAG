@@ -76,3 +76,158 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 - 实现 `src/model_client.py`；
 - 编写统一的本地模型调用函数；
 - 测试输入一道数学题后，模型能返回答案。
+
+---
+
+## Day 4
+
+完成内容：
+
+- 实现 `src/model_client.py`；
+- 使用 `LocalModelClient` 封装本地模型调用；
+- 成功调用 `Qwen/Qwen2.5-1.5B-Instruct`；
+- 输入一道一元二次方程测试题，模型能够输出正确解答。
+
+测试命令：
+
+```bash
+python src/model_client.py
+```
+
+测试题目：
+```test
+解方程：x^2 - 5x + 6 = 0
+```
+
+测试结果：
+```test
+模型能够给出 x=2 或 x=3，结果正确。
+```
+
+当前理解：
+
+- model_client.py 是模型调用中心；
+- 后续 Baseline、RAG、CoT 都会复用这个模块；
+- 测试文件的作用是验证模块是否被改坏；
+- 当前模型调用已经从临时 demo 进入可复用模块阶段。
+
+下一步计划：
+
+- 编写 src/prompts.py；
+- 将 Prompt 模板从模型调用代码中拆出来；
+- 为后续 Baseline 批量解题做准备。
+
+为了更好进行调试，建立新的文件：
+
+src/ 下面的文件 = 正式功能代码
+tests/ 下面的文件 = 用来验证功能是否正常
+
+测试命令：
+
+```bash
+python tests/test_model_client.py
+```
+
+测试题目：
+```test
+解方程：x^2 - 5x + 6 = 0
+```
+
+测试现象：
+
+- 程序可以正常加载模型；
+- 模型可以生成答案；
+- 但生成的数学答案不完全正确。
+
+初步原因分析：
+
+- 当前使用的是轻量级本地模型 Qwen/Qwen2.5-1.5B-Instruct；
+- 小模型在数学推理任务上存在不稳定性；
+- 当前 Prompt 较简单；
+- 当前生成参数存在随机性。
+
+后续改进方向：
+
+- 使用更稳定的生成参数，例如 do_sample=False；
+- 设计更清晰的数学解题 Prompt；
+- 后续使用 SymPy 对计算结果进行校验；
+- 在 Baseline 阶段记录模型错误，为后续 RAG 和自验证提供对比。
+
+在 src/ 下面放一个空文件：
+
+```test
+src/__init__.py
+```
+
+它的作用就是告诉 Python：
+
+```test
+src 不是普通文件夹，而是一个 Python 包。
+```
+
+同理，在 tests/ 下面放：
+
+```test
+tests/__init__.py
+```
+
+是为了可以用这种方式运行测试：
+
+```bash
+python -m tests.test_model_client
+```
+
+---
+
+## Day 5
+
+完成内容：
+
+- 编写 `src/prompts.py`；
+- 实现 Basic Prompt、CoT Prompt 和 Answer Only Prompt；
+- 编写 `tests/test_prompts.py` 测试 Prompt 模板生成；
+- 编写 `tests/test_prompt_with_model.py`，初步观察不同 Prompt 对模型输出的影响。
+
+测试命令：
+
+```bash
+python src/prompts.py
+python -m tests.test_prompts
+python -m tests.test_prompt_with_model
+```
+
+当前理解：
+
+- model_client.py 负责模型调用；
+- prompts.py 负责提示词管理；
+- 将 Prompt 单独拆出来，可以避免后续代码混乱；
+- CoT Prompt 的作用是引导模型输出更完整的推理步骤；
+- Prompt 会影响模型回答的结构，但不能保证答案一定正确。
+
+遇到的问题：
+
+- 小模型在数学题上的回答仍可能不稳定；
+- 后续需要通过批量测试、SymPy 校验和错误分析来系统评估。
+- 下一步计划：
+- 准备第一批数学测试题；
+- 创建 data/test_questions.jsonl；
+- 为 Baseline 批量解题做准备。
+
+测试题目：
+
+```text
+解方程：x^2 - 5x + 6 = 0
+```
+
+观察结果：
+
+- Basic Prompt 能够引导模型使用求根公式解题；
+- CoT Prompt 能够引导模型按照知识点、方法、推理、检查、答案的结构输出；
+- 当前输出中包含了原始 Prompt，原因是 tokenizer.decode(outputs[0]) 会同时解码输入和生成内容；
+- Basic Prompt 的输出被截断，说明 max_new_tokens=300 对数学推理可能偏短。
+
+改进计划：
+
+- 修改 model_client.py，只返回模型新生成的内容；
+- 将默认 max_new_tokens 调整为 512；
+- 数学题生成时优先使用 do_sample=False，减少随机性。
