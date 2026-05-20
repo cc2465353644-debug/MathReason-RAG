@@ -45,7 +45,7 @@ Prompt 模板如下：
 
 Baseline 解题流程如下：
 
-```test
+```text
 读取测试题数据
 ↓
 提取题目内容
@@ -64,7 +64,7 @@ Baseline 解题流程如下：
 具体来说，系统首先从 `data/test_questions.jsonl` 中读取数学题，每道题包含题目编号、题目内容、标准答案、题型和难度等信息。
 随后，系统将题目填入 Basic Prompt，并调用本地模型生成答案。模型输出结果会保存到：
 
-```test
+```text
 results/baseline_results.jsonl
 ```
 
@@ -144,7 +144,7 @@ python -m src.evaluator
 
 运行结果如下：
 
-```test
+```text
 Evaluated 10 results.
 Correct: 10
 Accuracy: 100.00%
@@ -153,7 +153,7 @@ Saved evaluated results to results/baseline_evaluated.jsonl
 
 增强后的 evaluator 对 `results/baseline_results.jsonl` 中的 10 条模型输出进行了重新评测，并将评测结果保存到：
 
-```test
+```text
 results/baseline_evaluated.jsonl
 ```
 
@@ -180,25 +180,25 @@ results/baseline_evaluated.jsonl
 
 标准答案：
 
-```test
+```text
 x=2 或 x=3
 ```
 
 模型答案：
 
-```test
+```text
 x1=2, x2=3
 ```
 
 初版 evaluator 判定结果：
 
-```test
+```text
 错误
 ```
 
 人工复核结果：
 
-```test
+```text
 正确
 ```
 
@@ -209,7 +209,7 @@ x1=2, x2=3
 
 改进方向：
 
-```test
+```text
 对方程解类题目进行答案归一化，提取所有数值解后进行集合比较。
 ```
 
@@ -217,31 +217,31 @@ x1=2, x2=3
 
 题目：
 
-```test
+```text
 一个袋子中有 3 个红球和 2 个蓝球，随机取出 1 个球，取到红球的概率是多少？
 ```
 
 标准答案：
 
-```test
+```text
 3/5
 ```
 
 模型答案：
 
-```test
+```text
 0.6
 ````
 
 初版 evaluator 判定结果：
 
-```test
+```text
 错误
 ```
 
 人工复核结果：
 
-```test
+```text
 正确
 ```
 
@@ -249,7 +249,7 @@ x1=2, x2=3
 
 该题的正确概率为：
 
-```test
+```text
 3 / (3 + 2) = 3/5 = 0.6
 ```
 
@@ -258,7 +258,7 @@ x1=2, x2=3
 
 改进方向：
 
-```test
+```text
 对数值类答案加入数值等价判断，例如将 3/5 和 0.6 都转换为浮点数或 SymPy 表达式后比较。
 ```
 
@@ -360,7 +360,7 @@ x > 3
 
 计划增加的题型包括：
 
-```test
+```text
 一元二次方程
 代数化简
 函数求导
@@ -409,7 +409,7 @@ x > 3
 
 对比内容包括：
 
-```test
+```text
 Baseline Prompt
 CoT Prompt
 ```
@@ -426,7 +426,7 @@ CoT Prompt
 
 RAG 阶段目标是实现：
 
-```test
+```text
 用户题目
 ↓
 检索相关知识点
@@ -447,7 +447,7 @@ RAG 阶段目标是实现：
 在后续阶段，将使用 SymPy 对部分数学计算进行自动验证。
 优先验证的内容包括：
 
-```test
+```text
 方程求解
 代数化简
 函数求导

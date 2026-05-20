@@ -226,7 +226,7 @@ python tests/test_load_questions.py
 
 测试结果：
 
-```test
+```text
 Loaded 10 questions.
 ```
 
@@ -266,7 +266,7 @@ python -m src.baseline_solver
 
 输出文件：
 
-```test
+```text
 results/baseline_results.jsonl
 ```
 
@@ -388,7 +388,7 @@ python -m src.evaluator
 
 评测结果：
 
-```test
+```text
 Evaluated 10 results.
 Correct: 10
 Accuracy: 100.00%
@@ -399,4 +399,22 @@ Saved evaluated results to results/baseline_evaluated.jsonl
 本次结果说明，增强后的 evaluator 已经能够处理当前测试集中出现的简单数学等价表达问题，例如多解方程格式差异、分数和小数等价。
 需要注意的是，当前测试集只有 10 道基础题，结果不能代表模型在复杂数学推理任务上的稳定表现。后续需要扩展测试集，并继续增强 evaluator 的答案类型判断能力。
 
+## Day12
 
+今天整理了 Baseline 阶段的运行流程，确认 `baseline_solver` 和 `evaluator` 都可以正常运行。
+当前 Baseline 流程为：
+
+```text
+data/test_questions.jsonl
+↓
+python -m src.baseline_solver
+↓
+results/baseline_results.jsonl
+↓
+python -m src.evaluator
+↓
+results/baseline_evaluated.jsonl
+```
+
+同时检查并更新了 README 中的运行命令，使文档中的命令与实际项目运行方式保持一致。
+当前 Baseline 阶段已经完成最小闭环，下一步计划是进入 RAG 阶段，开始准备数学知识库内容。

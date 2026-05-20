@@ -67,7 +67,7 @@ MathReason-RAG 是一个面向数学推理任务的轻量级 AI 系统。
 
 ## 4. 系统架构设计
 计划中的系统整体流程如下：
-```test
+```text
 用户输入数学题
         ↓
 题目预处理
@@ -97,7 +97,7 @@ SymPy 检查关键计算
 | Metrics| 统计准确率和错误类型|
 | UI / CLI|	提供网页或命令行交互界面|
 ## 5. 项目目录结构
-```test
+```text
 MathReason-RAG/
 ├── README.md
 ├── requirements.txt
@@ -141,7 +141,7 @@ MathReason-RAG/
 ```
 ## 6. 环境要求
 当前计划使用的主要环境如下：
-```test
+```text
 Python >= 3.10
 PyTorch
 Transformers
@@ -153,7 +153,7 @@ Matplotlib
 Streamlit
 ```
 本项目计划优先支持本地轻量模型推理，例如：
-```test
+```text
 Qwen/Qwen2.5-1.5B-Instruct
 ```
 也会预留 API 模型接口，用于后续对比实验。
@@ -182,7 +182,7 @@ pip install sentence-transformers faiss-cpu
 python tests/test_generation.py
 ```
 预期效果：
-```test
+```text
 输入一道数学题，模型输出解题过程和最终答案。
 ```
 ### 8.2 测试 SymPy 数学计算
@@ -190,7 +190,7 @@ python tests/test_generation.py
 python tests/test_sympy.py
 ```
 预期效果：
-```test
+```text
 SymPy 能够求解方程、求导、积分或化简表达式。
 ```
 ### 8.3 运行 Baseline 解题流程
@@ -199,7 +199,7 @@ SymPy 能够求解方程、求导、积分或化简表达式。
 python -m src.baseline_solver
 ```
 预期效果：
-```test
+```text
 读取 data/test_questions.jsonl 中的数学题，
 调用模型生成答案，
 并将结果保存到 results/baseline_results.jsonl。
@@ -209,7 +209,7 @@ python -m src.baseline_solver
 python -m src.evaluator
 ```
 预期效果：
-```test
+```text
 读取 results/baseline_results.jsonl，
 对模型答案进行自动评测，
 并将评测结果保存到 results/baseline_evaluated.jsonl。
@@ -219,14 +219,14 @@ python -m src.evaluator
 python run_baseline.py
 ```
 预期效果：
-```test
+```text
 依次运行 Baseline 解题和 evaluator 自动评测，
 生成 baseline_results.jsonl 和 baseline_evaluated.jsonl。
 ```
 ## 9. 数据格式说明
 ### 9.1 测试题数据格式
 测试题存放在：
-```test
+```text
 data/test_questions.jsonl
 ```
 每一行是一道题，例如：
@@ -244,7 +244,7 @@ topic|	知识点类别
 difficulty|	难度等级
 ### 9.2 模型输出结果格式
 模型结果计划保存到：
-```test
+```text
 results/baseline_results.jsonl
 ```
 示例：
@@ -359,14 +359,14 @@ RAG + CoT + SymPy|	是|	是|	是|	完整自验证流程
 
 ## 16. 项目状态
 当前状态：
-```test
+```text
 开发中
 ```
 当前版本：
-```test
+```text
 v0.1.0
 ```
 当前重点：
-```test
+```text
 完成 Baseline 解题系统和第一批测试题评测。
 ```
