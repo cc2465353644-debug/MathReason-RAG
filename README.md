@@ -194,14 +194,34 @@ python tests/test_sympy.py
 SymPy 能够求解方程、求导、积分或化简表达式。
 ```
 ### 8.3 运行 Baseline 解题流程
+运行 Baseline 解题脚本：
 ```bash
-python src/baseline_solver.py
+python -m src.baseline_solver
 ```
 预期效果：
 ```test
 读取 data/test_questions.jsonl 中的数学题，
 调用模型生成答案，
 并将结果保存到 results/baseline_results.jsonl。
+```
+运行 evaluator 自动评测：
+```bash
+python -m src.evaluator
+```
+预期效果：
+```test
+读取 results/baseline_results.jsonl，
+对模型答案进行自动评测，
+并将评测结果保存到 results/baseline_evaluated.jsonl。
+```
+如果需要一键运行完整 Baseline 流程，可以使用：
+```bash
+python run_baseline.py
+```
+预期效果：
+```test
+依次运行 Baseline 解题和 evaluator 自动评测，
+生成 baseline_results.jsonl 和 baseline_evaluated.jsonl。
 ```
 ## 9. 数据格式说明
 ### 9.1 测试题数据格式
@@ -349,14 +369,4 @@ v0.1.0
 当前重点：
 ```test
 完成 Baseline 解题系统和第一批测试题评测。
-```
-你现在可以先建这几个最小文件：
-
-```text
-README.md
-requirements.txt
-docs/dev_log.md
-data/test_questions.jsonl
-tests/test_generation.py
-tests/test_sympy.py
 ```

@@ -81,101 +81,89 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 
 ## Day 4
 
-完成内容：
+完成内容
 
-- 实现 `src/model_client.py`；
-- 使用 `LocalModelClient` 封装本地模型调用；
-- 成功调用 `Qwen/Qwen2.5-1.5B-Instruct`；
-- 输入一道一元二次方程测试题，模型能够输出正确解答。
+- 实现 `src/model_client.py`
+- 使用 `LocalModelClient` 封装本地模型调用
+- 成功调用本地模型 `Qwen/Qwen2.5-1.5B-Instruct`
+- 使用一元二次方程测试模型输出
 
-测试命令：
+测试命令
 
 ```bash
 python src/model_client.py
 ```
 
-测试题目：
-```test
-解方程：x^2 - 5x + 6 = 0
-```
-
-测试结果：
-```test
-模型能够给出 x=2 或 x=3，结果正确。
-```
-
-当前理解：
-
-- model_client.py 是模型调用中心；
-- 后续 Baseline、RAG、CoT 都会复用这个模块；
-- 测试文件的作用是验证模块是否被改坏；
-- 当前模型调用已经从临时 demo 进入可复用模块阶段。
-
-下一步计划：
-
-- 编写 src/prompts.py；
-- 将 Prompt 模板从模型调用代码中拆出来；
-- 为后续 Baseline 批量解题做准备。
-
-为了更好进行调试，建立新的文件：
-
-src/ 下面的文件 = 正式功能代码
-tests/ 下面的文件 = 用来验证功能是否正常
-
-测试命令：
-
-```bash
-python tests/test_model_client.py
-```
-
-测试题目：
-```test
-解方程：x^2 - 5x + 6 = 0
-```
-
-测试现象：
-
-- 程序可以正常加载模型；
-- 模型可以生成答案；
-- 但生成的数学答案不完全正确。
-
-初步原因分析：
-
-- 当前使用的是轻量级本地模型 Qwen/Qwen2.5-1.5B-Instruct；
-- 小模型在数学推理任务上存在不稳定性；
-- 当前 Prompt 较简单；
-- 当前生成参数存在随机性。
-
-后续改进方向：
-
-- 使用更稳定的生成参数，例如 do_sample=False；
-- 设计更清晰的数学解题 Prompt；
-- 后续使用 SymPy 对计算结果进行校验；
-- 在 Baseline 阶段记录模型错误，为后续 RAG 和自验证提供对比。
-
-在 src/ 下面放一个空文件：
-
-```test
-src/__init__.py
-```
-
-它的作用就是告诉 Python：
-
-```test
-src 不是普通文件夹，而是一个 Python 包。
-```
-
-同理，在 tests/ 下面放：
-
-```test
-tests/__init__.py
-```
-
-是为了可以用这种方式运行测试：
+或使用测试文件运行：
 
 ```bash
 python -m tests.test_model_client
 ```
+
+测试题目
+
+```text
+解方程：x^2 - 5x + 6 = 0
+```
+
+测试结果
+
+模型可以正常加载并生成答案。
+
+在部分情况下，模型能够给出正确结果：
+
+```text
+x = 2 或 x = 3
+```
+
+但由于当前使用的是轻量级本地模型，数学推理结果有时不够稳定。
+
+当前理解
+
+- `model_client.py` 是统一的模型调用模块
+- 后续 Baseline、RAG、CoT 都会复用该模块
+- `tests/` 目录用于存放测试代码
+- 测试文件的作用是验证功能是否被改坏
+- 当前项目已经从临时 demo 进入可复用模块阶段
+
+项目结构调整
+
+新增文件：
+
+```text
+src/__init__.py
+tests/__init__.py
+```
+
+作用：
+
+- 让 `src` 成为 Python 包
+- 让 `tests` 成为 Python 包
+- 支持使用模块方式运行测试
+
+例如：
+
+```bash
+python -m tests.test_model_client
+```
+
+初步原因分析
+
+当前数学结果不稳定，可能原因包括：
+
+- 模型较小：`Qwen/Qwen2.5-1.5B-Instruct`
+- 当前 Prompt 较简单
+- 生成参数存在随机性
+- 小模型在数学推理任务上本身存在不稳定性
+
+下一步计划
+
+- 编写 `src/prompts.py`
+- 将 Prompt 模板从模型调用代码中拆分出来
+- 使用更稳定的生成参数，例如 `do_sample=False`
+- 后续使用 SymPy 对计算结果进行校验
+- 在 Baseline 阶段记录模型错误
+- 为后续 RAG 和自验证方法提供对比
 
 ---
 
@@ -185,49 +173,230 @@ python -m tests.test_model_client
 
 - 编写 `src/prompts.py`；
 - 实现 Basic Prompt、CoT Prompt 和 Answer Only Prompt；
-- 编写 `tests/test_prompts.py` 测试 Prompt 模板生成；
-- 编写 `tests/test_prompt_with_model.py`，初步观察不同 Prompt 对模型输出的影响。
+- 编写 `tests/test_prompts.py`；
+- 编写 `tests/test_prompt_with_model.py`；
+- 使用模型测试 Basic Prompt 和 CoT Prompt 的输出效果；
+- 优化 `model_client.py`，使其只返回模型新生成的内容，而不是返回完整 Prompt + 回答。
+
+遇到的问题：
+
+- 初始输出中包含了原始 Prompt；
+- 原因是 `tokenizer.decode(outputs[0])` 会把输入和输出一起解码；
+- 修改时出现了 `return outside function` 报错；
+- 原因是 `generate()` 函数缩进错误，被写进了 `__init__()` 内部。
+
+解决方式：
+
+- 使用输入 token 长度 `input_length` 截取模型新生成部分；
+- 调整 `generate()` 函数缩进，使其和 `__init__()` 处于同一级；
+- 将默认 `max_new_tokens` 调整为 512；
+- 默认使用 `do_sample=False`，让数学解题输出更稳定。
+
+当前理解：
+
+- `prompts.py` 负责管理提示词模板；
+- `model_client.py` 负责统一模型调用；
+- 测试文件用于验证模块是否正常工作；
+- CoT Prompt 可以让模型更倾向于输出分步骤推理；
+- Prompt 能影响输出结构，但不能保证答案一定正确。
+
+下一步计划：
+
+- 创建 `data/test_questions.jsonl`；
+- 准备第一批数学题；
+- 为后续 Baseline 批量解题做准备。
+
+---
+
+## Day 6
+
+完成内容：
+
+- 创建 `data/test_questions.jsonl`；
+- 准备第一批 10 道基础数学测试题；
+- 覆盖代数方程、代数化简、导数、积分、极限、数列、概率和几何；
+- 编写 `tests/test_load_questions.py`；
+- 成功读取并打印 10 道测试题。
 
 测试命令：
 
 ```bash
-python src/prompts.py
-python -m tests.test_prompts
-python -m tests.test_prompt_with_model
+python tests/test_load_questions.py
+```
+
+测试结果：
+
+```test
+Loaded 10 questions.
 ```
 
 当前理解：
 
-- model_client.py 负责模型调用；
-- prompts.py 负责提示词管理；
-- 将 Prompt 单独拆出来，可以避免后续代码混乱；
-- CoT Prompt 的作用是引导模型输出更完整的推理步骤；
-- Prompt 会影响模型回答的结构，但不能保证答案一定正确。
+- .jsonl 文件适合存储多条结构化数据；
+- 当前每一行代表一道数学题；
+- question 是模型需要解答的题目；
+- answer 是后续评测时使用的标准答案；
+- 当前测试只是验证数据读取，不是模型解题。
 
-遇到的问题：
+下一步计划：
 
-- 小模型在数学题上的回答仍可能不稳定；
-- 后续需要通过批量测试、SymPy 校验和错误分析来系统评估。
-- 下一步计划：
-- 准备第一批数学测试题；
-- 创建 data/test_questions.jsonl；
-- 为 Baseline 批量解题做准备。
+- 编写 src/baseline_solver.py；
+- 批量读取测试题；
+- 调用 LocalModelClient 解题；
+- 将模型输出保存到 results/baseline_results.jsonl。
 
-测试题目：
+---
 
-```text
-解方程：x^2 - 5x + 6 = 0
+## Day 7
+
+完成内容：
+
+- 编写 `src/baseline_solver.py`；
+- 实现 `load_questions()` 函数，用于读取 JSONL 数学题数据；
+- 实现 `save_result()` 函数，用于保存模型输出；
+- 实现 `run_baseline()` 函数，用于批量调用模型解题；
+- 使用 Basic Prompt 对前 3 道数学题进行 Baseline 测试；
+- 成功生成 `results/baseline_results.jsonl`。
+
+测试命令：
+
+```bash
+python -m src.baseline_solver
 ```
+
+输出文件：
+
+```test
+results/baseline_results.jsonl
+```
+
+当前理解：
+
+- baseline_solver.py 是第一版完整解题流程；
+- 当前 Baseline 不使用 RAG、不使用 CoT、不使用 SymPy；
+- Baseline 的作用是作为后续方法的对照组；
+- 先保存模型原始输出，再单独写 evaluator 判断答案是否正确；
+- 批量实验结果应该保存到 results/ 目录，而不是只打印在终端里。
+
+下一步计划：
+
+- 扩展 Baseline 运行到全部 10 道题；
+- 编写 src/evaluator.py；
+- 初步判断模型答案是否正确；
+- 生成第一版 Baseline 分析报告。
+
+补充测试：
+
+- 将 `run_baseline(max_questions=3)` 修改为 `run_baseline(max_questions=None)`；
+- 成功运行全部 10 道数学题；
+- 成功生成完整的 `results/baseline_results.jsonl`。
 
 观察结果：
 
-- Basic Prompt 能够引导模型使用求根公式解题；
-- CoT Prompt 能够引导模型按照知识点、方法、推理、检查、答案的结构输出；
-- 当前输出中包含了原始 Prompt，原因是 tokenizer.decode(outputs[0]) 会同时解码输入和生成内容；
-- Basic Prompt 的输出被截断，说明 max_new_tokens=300 对数学推理可能偏短。
+- 本地模型可以完成批量解题；
+- 运行速度较慢，但流程完整；
+- 当前结果尚未自动判断正确性；
+- 下一步需要编写 `evaluator.py` 对模型输出进行评测。
 
-改进计划：
+---
 
-- 修改 model_client.py，只返回模型新生成的内容；
-- 将默认 max_new_tokens 调整为 512；
-- 数学题生成时优先使用 do_sample=False，减少随机性。
+## Day 8
+
+完成内容：
+
+- 编写 `src/evaluator.py`
+- 实现 `load_jsonl()` 和 `save_jsonl()`
+- 实现 `normalize_text()`
+- 实现第一版 `simple_match()`
+- 对 `results/baseline_results.jsonl`进行初步评测
+- 生成 `results/baseline_evaluated.jsonl`
+
+
+测试命令：
+
+```bash
+python -m src.evaluator
+```
+
+输出文件：
+
+```text
+results/baseline_evaluated.jsonl
+```
+
+当前理解：
+- 第一版 evaluator 使用简单字符串匹配；
+- 该方法只能判断部分明显正确的答案；
+- 对于等价表达式、答案顺序变化、格式不同等情况，简单匹配可能误判；
+- 后续需要使用 SymPy 进行更可靠的数学等价判断。
+
+下一步计划：
+
+- 人工检查 baseline_evaluated.jsonl；
+- 记录错误类型；
+- 编写第一版 reports/baseline_analysis.md；
+- 后续改进 evaluator。
+
+---
+## Day9
+
+今天完成了 Baseline 第一轮测试，使用 `Qwen/Qwen2.5-1.5B-Instruct` 对 10 道基础数学题进行直接解答，并将结果保存到 `results/baseline_results.jsonl`。
+
+初版 evaluator 使用简单字符串匹配，自动评测准确率为 80%。人工检查后发现，主要误判来自数学等价答案的不同表达方式，例如多解方程格式不同、分数和小数表达不同。
+
+下一步计划是增强 evaluator，使其支持简单数值等价判断，并继续整理 Baseline 实验分析报告。
+
+---
+
+## Day 10
+
+完成内容：
+
+- 改进 `src/evaluator.py`；
+- 保留简单字符串匹配；
+- 新增数值抽取函数 `extract_numeric_values()`；
+- 新增数值等价判断函数 `contains_numeric_answers()`；
+- 解决 `3/5` 与 `0.6` 的等价判断问题；
+- 解决 `x=2 或 x=3` 与 `x1=2, x2=3` 的格式差异问题；
+- 重新评测 Baseline 结果；
+- 更新 `reports/baseline_analysis.md`。
+
+当前理解：
+
+- 数学答案不能只依赖字符串匹配；
+- 同一个数学答案可能有多种表达形式；
+- 分数、小数、方程解顺序变化都会导致简单匹配误判；
+- evaluator 本身也是数学推理系统的重要组成部分；
+- 后续可以进一步引入 SymPy 进行表达式等价判断。
+
+下一步计划：
+
+- 初步引入 SymPy；
+- 编写 `src/sympy_checker.py`；
+- 测试方程求解、表达式化简、导数和积分。
+
+---
+
+## Day11
+
+今天使用 Day10 改进后的 evaluator 对 Day9 的 Baseline 结果进行了重新评测。
+运行命令：
+
+```bash
+python -m src.evaluator
+```
+
+评测结果：
+
+```test
+Evaluated 10 results.
+Correct: 10
+Accuracy: 100.00%
+Saved evaluated results to results/baseline_evaluated.jsonl
+```
+
+随后检查了 `results/baseline_evaluated.jsonl` 文件，确认 10 道题的自动判定结果均为正确。
+本次结果说明，增强后的 evaluator 已经能够处理当前测试集中出现的简单数学等价表达问题，例如多解方程格式差异、分数和小数等价。
+需要注意的是，当前测试集只有 10 道基础题，结果不能代表模型在复杂数学推理任务上的稳定表现。后续需要扩展测试集，并继续增强 evaluator 的答案类型判断能力。
+
+

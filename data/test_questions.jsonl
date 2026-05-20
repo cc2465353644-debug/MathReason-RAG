@@ -1,0 +1,10 @@
+{"id": "algebra_001", "question": "解方程：x^2 - 5x + 6 = 0", "answer": "x=2 或 x=3", "topic": "代数方程", "difficulty": "easy"}
+{"id": "algebra_002", "question": "解方程：2x + 3 = 11", "answer": "x=4", "topic": "代数方程", "difficulty": "easy"}
+{"id": "algebra_003", "question": "化简表达式：(x+1)^2 - x^2", "answer": "2x+1", "topic": "代数化简", "difficulty": "easy"}
+{"id": "function_001", "question": "求函数 f(x)=x^2+3x 的导数。", "answer": "2x+3", "topic": "导数", "difficulty": "easy"}
+{"id": "function_002", "question": "求函数 f(x)=x^3-2x+1 的导数。", "answer": "3x^2-2", "topic": "导数", "difficulty": "easy"}
+{"id": "integral_001", "question": "计算不定积分：∫ 2x dx。", "answer": "x^2+C", "topic": "积分", "difficulty": "easy"}
+{"id": "limit_001", "question": "计算极限：lim_{x->0} sin(x)/x。", "answer": "1", "topic": "极限", "difficulty": "easy"}
+{"id": "sequence_001", "question": "已知等差数列首项 a1=3，公差 d=2，求第 10 项。", "answer": "21", "topic": "数列", "difficulty": "easy"}
+{"id": "probability_001", "question": "一个袋子中有 3 个红球和 2 个蓝球，随机取出 1 个球，取到红球的概率是多少？", "answer": "3/5", "topic": "概率", "difficulty": "easy"}
+{"id": "geometry_001", "question": "直角三角形两条直角边分别为 3 和 4，求斜边长度。", "answer": "5", "topic": "几何", "difficulty": "easy"}
